@@ -1,0 +1,17 @@
+{
+  "OutputFoldersPerTargetSystem": {
+    "Lokaler Computer": [
+      "out\\build\\x64-Debug",
+      "out\\install\\x64-Debug"
+    ]
+  },
+  "ExpandedNodes": [
+    "",
+    "\\flutter",
+    "\\out",
+    "\\out\\build",
+    "\\runner"
+  ],
+  "SelectedNode": "\\runner\\flutter_window.cpp",
+  "PreviewInSolutionExplorer": false
+}
