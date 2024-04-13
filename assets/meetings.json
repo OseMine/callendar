@@ -1,0 +1,18 @@
+[
+  {
+    "Name": "Conference",
+    "startTime": "2024, 04, 12, 9",
+    "endTime": "2024, 04, 12, 11",
+    "Type": "Conference",
+    "Color": "0xFF0F8644",
+    "AllDay": false
+  },
+  {
+    "Name": "Geburtstag Oskar",
+    "startTime": "2024, 04, 09, 0",
+    "endTime": "2024, 04, 09, 23",
+    "Type": "Conference",
+    "Color": "0xFF0F8644",
+    "AllDay": true
+  }
+]

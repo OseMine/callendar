@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'calendar.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'AddWidget.dart';
 
 void main() {
   runApp(const CalendarApp());
@@ -37,16 +38,20 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     _calendarBackend = CalendarBackend();
     _slidercalendarBackend = CalendarBackend();
-
   }
-
-
-
 
   void _incrementCounter() {
     setState(() {
       _counter++;
     });
+  }
+
+  void _LoadAddEventWidget() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => AddEventWidget(),
+    );
   }
 
   @override
@@ -58,7 +63,6 @@ class _MyHomePageState extends State<MyHomePage> {
     BorderRadiusGeometry radius = BorderRadius.only(
       topLeft: Radius.circular(24.0),
       topRight: Radius.circular(24.0),
-
     );
     return Scaffold(
       appBar: AppBar(
@@ -66,26 +70,18 @@ class _MyHomePageState extends State<MyHomePage> {
         centerTitle: true,
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body:
-
-      SlidingUpPanel(
+      body: SlidingUpPanel(
         maxHeight: _panelHeightOpen,
         minHeight: _panelHeightClosed,
         parallaxEnabled: true,
         parallaxOffset: .5,
         panel: Center(
-          child:
-
-          SfCalendar(
+          child: SfCalendar(
             view: CalendarView.day,
             controller: _slidercalendarBackend.calendarController,
             dataSource: MeetingDataSource(_calendarBackend.getMeetingData()),
-            /*monthViewSettings: const MonthViewSettings(
-            ),*/
           ),
-
         ),
-
         body: Center(
           child: SfCalendar(
             view: CalendarView.month,
@@ -93,15 +89,11 @@ class _MyHomePageState extends State<MyHomePage> {
             dataSource: MeetingDataSource(_calendarBackend.getMeetingData()),
             monthViewSettings: MonthViewSettings(showAgenda: true, agendaViewHeight: 500),
           ),
-
         ),
-        borderRadius: radius,// This trailing comma makes auto-formatting nicer for build methods.
+        borderRadius: radius,
       ),
-
-
-
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: _LoadAddEventWidget,
         tooltip: 'Add',
         child: const Icon(Icons.add),
       ),
