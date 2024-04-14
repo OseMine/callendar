@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AddEventWidget extends StatefulWidget {
   @override
@@ -9,10 +11,19 @@ class AddEventWidget extends StatefulWidget {
 class _AddEventWidgetState extends State<AddEventWidget> {
   DateTime _startDate = DateTime.now();
   TimeOfDay _startTime = TimeOfDay.now();
-  DateTime _endDate = DateTime.now().add(Duration(hours: 1));
+  DateTime _endDate = DateTime.now();
   TimeOfDay _endTime = TimeOfDay(hour: TimeOfDay.now().hour + 1, minute: TimeOfDay.now().minute);
   String _eventTitle = '';
   bool _isAllDay = false;
+
+  String formatTime(DateTime date, TimeOfDay time) {
+    return '${date.year}, ${date.month}, ${date.day}, ${time.hour}';
+  }
+
+  Future<void> _saveEventData(String jsonData) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('eventData', jsonData);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -127,8 +138,18 @@ class _AddEventWidgetState extends State<AddEventWidget> {
           ),
           SizedBox(height: 16.0),
           ElevatedButton(
-            onPressed: () {
-              // Save the event data and close the widget
+            onPressed: () async {
+              Map<String, dynamic> eventData = {
+                'Name': _eventTitle,
+                'startTime': formatTime(_startDate, _startTime),
+                'endTime': formatTime(_endDate, _endTime),
+                'Type': 'Conference',
+                'Color': '0xFF0F8644',
+                'AllDay': _isAllDay,
+              };
+              String jsonData = jsonEncode(eventData);
+              await _saveEventData(jsonData); // Speichern der JSON-Daten im lokalen Gerätespeicher
+              print(jsonData);
               Navigator.of(context).pop();
             },
             child: Text('Save Event'),

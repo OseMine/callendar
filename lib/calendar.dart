@@ -1,25 +1,56 @@
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'dart:ui';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CalendarBackend {
   late CalendarController _calendarController;
 
   CalendarBackend() {
     _calendarController = CalendarController();
+    _loadSavedEvents();
   }
-
-
 
   CalendarController get calendarController => _calendarController;
 
   List<Meeting> getMeetingData() {
-    return _getDataSource();
+   return _dataSource?.appointments?? [];
   }
 
+  late MeetingDataSource _dataSource;
 
+  Future<void> _loadSavedEvents() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? savedEvents = prefs.getString('eventData');
+    if (savedEvents!= null) {
+      List<dynamic> eventData = jsonDecode(savedEvents) as List<dynamic>;
+      List<Meeting> meetings = eventData.map((event) {
+        if (event is Meeting) return event; // Only return if it's already a Meeting
+        // Handle non-Meeting data here (optional)
+        return Meeting(
+          event['Name'],
+          DateTime(
+            int.parse(event['startTime'].split(', ')[0]),
+            int.parse(event['startTime'].split(', ')[1]),
+            int.parse(event['startTime'].split(', ')[2]),
+            int.parse(event['startTime'].split(', ')[3]),
+          ),
+          DateTime(
+            int.parse(event['endTime'].split(', ')[0]),
+            int.parse(event['endTime'].split(', ')[1]),
+            int.parse(event['endTime'].split(', ')[2]),
+            int.parse(event['endTime'].split(', ')[3]),
+          ),
+          Color(int.parse(event['Color'])),
+          event['AllDay'],
+        );
+      }).toList();
 
-
-
+      _dataSource = MeetingDataSource(meetings);
+    } else {
+      _dataSource = MeetingDataSource(_getDataSource());
+    }
+  }
 
   List<Meeting> _getDataSource() {
     final List<Meeting> meetings = <Meeting>[];
@@ -29,14 +60,13 @@ class CalendarBackend {
 
     meetings.add(
       Meeting(
-        'Conference', //Name
-        startTime, //startTime
-        endTime, //endTime
+        'Conference',
+        startTime,
+        endTime,
         const Color(0xFF0F8644),
-        false, //AllDay
+        false,
       ),
     );
-
 
     return meetings;
   }

@@ -30,6 +30,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   late CalendarBackend _calendarBackend;
   late CalendarBackend _slidercalendarBackend;
+  late MeetingDataSource _dataSource;
 
   int _counter = 0;
 
@@ -38,6 +39,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     _calendarBackend = CalendarBackend();
     _slidercalendarBackend = CalendarBackend();
+
   }
 
   void _incrementCounter() {
