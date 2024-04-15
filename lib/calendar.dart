@@ -1,32 +1,73 @@
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'dart:ui';
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CalendarBackend {
   late CalendarController _calendarController;
+  late MeetingDataSource _dataSource;
 
   CalendarBackend() {
     _calendarController = CalendarController();
+    _dataSource = MeetingDataSource(_getDataSource());
     _loadSavedEvents();
   }
 
   CalendarController get calendarController => _calendarController;
 
   List<Meeting> getMeetingData() {
-   return _dataSource?.appointments?? [];
+    if (_dataSource != null && _dataSource.appointments != null) {
+      return _dataSource.appointments!.cast<Meeting>().toList();
+    } else {
+      return [];
+    }
   }
 
-  late MeetingDataSource _dataSource;
 
   Future<void> _loadSavedEvents() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? savedEvents = prefs.getString('eventData');
-    if (savedEvents!= null) {
-      List<dynamic> eventData = jsonDecode(savedEvents) as List<dynamic>;
-      List<Meeting> meetings = eventData.map((event) {
-        if (event is Meeting) return event; // Only return if it's already a Meeting
-        // Handle non-Meeting data here (optional)
+    String? jsonFilePath = 'http://127.0.0.1:5500/test/callendar.json'; // Ersetzen Sie durch den tatsächlichen Pfad zur JSON-Datei
+    if (jsonFilePath != null) {
+      List<Meeting> meetings = await _loadMeetingsFromJsonFile(jsonFilePath);
+      _dataSource = MeetingDataSource(meetings);
+    } else {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? savedEvents = prefs.getString('eventData');
+      if (savedEvents != null) {
+        List<Map<String, dynamic>> eventData = (jsonDecode(savedEvents) as List<dynamic>)
+            .map((event) => event as Map<String, dynamic>)
+            .toList();
+        List<Meeting> meetings = eventData.map((event) {
+          return Meeting(
+            event['Name'],
+            DateTime(
+              int.parse(event['startTime'].split(', ')[0]),
+              int.parse(event['startTime'].split(', ')[1]),
+              int.parse(event['startTime'].split(', ')[2]),
+              int.parse(event['startTime'].split(', ')[3]),
+            ),
+            DateTime(
+              int.parse(event['endTime'].split(', ')[0]),
+              int.parse(event['endTime'].split(', ')[1]),
+              int.parse(event['endTime'].split(', ')[2]),
+              int.parse(event['endTime'].split(', ')[3]),
+            ),
+            Color(int.parse(event['Color'])),
+            event['AllDay'],
+          );
+        }).toList();
+        _dataSource = MeetingDataSource(meetings);
+      } else {
+        _dataSource = MeetingDataSource(_getDataSource());
+      }
+    }
+  }
+
+  Future<List<Meeting>> _loadMeetingsFromJsonFile(String url) async {
+    try {
+      final response = await http.get(Uri.parse(url));
+      final jsonData = jsonDecode(response.body) as List<dynamic>;
+      return jsonData.map((event) {
         return Meeting(
           event['Name'],
           DateTime(
@@ -45,10 +86,9 @@ class CalendarBackend {
           event['AllDay'],
         );
       }).toList();
-
-      _dataSource = MeetingDataSource(meetings);
-    } else {
-      _dataSource = MeetingDataSource(_getDataSource());
+    } catch (e) {
+      print('Error loading meetings from JSON file: $e');
+      return [];
     }
   }
 
